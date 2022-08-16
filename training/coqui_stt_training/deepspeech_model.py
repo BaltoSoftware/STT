@@ -71,9 +71,9 @@ def dense(name, x, units, dropout_rate=None, relu=True, layer_norm=False, freeze
             "weights",
             [x.shape[-1], units],
             tfv1.keras.initializers.VarianceScaling(
-                scale=1.0, mode="fan_avg", distribution="uniform",
-            trainable
+                scale=1.0, mode="fan_avg", distribution="uniform"
             ),
+            trainable
         )
 
     output = tf.nn.bias_add(tf.matmul(x, weights), bias)
