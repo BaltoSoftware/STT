@@ -864,6 +864,26 @@ class BaseSttConfig(Coqpit):
             help="the number of trials to run during hyperparameter optimization."
         ),
     )
+    # freeze bottom 3 layers in training
+    freeze_layer_1: bool = field(
+        default=False,
+        metadata=dict(
+            help="freeze layer 1 in training."
+        ),
+    )
+    freeze_layer_2: bool = field(
+        default=False,
+        metadata=dict(
+            help="freeze layer 2 in training."
+        ),
+    )
+    freeze_layer_3: bool = field(
+        default=False,
+        metadata=dict(
+            help="freeze layer 3 in training."
+        ),
+    )    
+
     # sphinx-doc: training_ref_flags_end
 
 

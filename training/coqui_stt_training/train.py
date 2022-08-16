@@ -88,7 +88,14 @@ def calculate_mean_edit_distance_and_loss(iterator, dropout, reuse):
 
     # Calculate the logits of the batch
     logits, _ = create_model(
-        batch_x, batch_seq_len, dropout, reuse=reuse, rnn_impl=rnn_impl
+        batch_x,
+        batch_seq_len,
+        dropout,
+        reuse=reuse,
+        rnn_impl=rnn_impl,
+        freeze_layer_1=Config.freeze_layer_1,
+        freeze_layer_2=Config.freeze_layer_2,
+        freeze_layer_3=Config.freeze_layer_3
     )
 
     # Compute the CTC loss using TensorFlow's `ctc_loss`

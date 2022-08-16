@@ -63,9 +63,10 @@ def create_overlapping_windows(batch_x):
     return batch_x
 
 
-def dense(name, x, units, dropout_rate=None, relu=True, layer_norm=False, trainable):
+def dense(name, x, units, dropout_rate=None, relu=True, layer_norm=False, freeze_layer=False):
+    trainable = False if freeze_layer else None
     with tfv1.variable_scope(name):
-        bias = variable_on_cpu("bias", [units], tfv1.zeros_initializer())
+        bias = variable_on_cpu("bias", [units], tfv1.zeros_initializer(), trainable)
         weights = variable_on_cpu(
             "weights",
             [x.shape[-1], units],
@@ -211,6 +212,7 @@ def create_model(
         Config.n_hidden_1,
         dropout_rate=dropout[0],
         layer_norm=Config.layer_norm,
+        freeze_layer=freeze_layer_1
     )
     layers["layer_2"] = layer_2 = dense(
         "layer_2",
@@ -218,6 +220,7 @@ def create_model(
         Config.n_hidden_2,
         dropout_rate=dropout[1],
         layer_norm=Config.layer_norm,
+        freeze_layer=freeze_layer_2
     )
     layers["layer_3"] = layer_3 = dense(
         "layer_3",
@@ -225,6 +228,7 @@ def create_model(
         Config.n_hidden_3,
         dropout_rate=dropout[2],
         layer_norm=Config.layer_norm,
+        freeze_layer=freeze_layer_3
     )
 
     # `layer_3` is now reshaped into `[n_steps, batch_size, 2*n_cell_dim]`,
