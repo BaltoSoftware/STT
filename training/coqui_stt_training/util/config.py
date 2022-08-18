@@ -963,6 +963,12 @@ def parse_config(config_name):
             k: os.path.join(base_path, v)
             for k, v in data_config.items()
         }
+
+    for key in ['train_csv', 'test_csv', 'dev_csv']:
+        if key in data_config:
+            print("Parsing Key")
+            data_config[key] = [data_config[key]]
+
     base_model_config = {
             k: os.path.join(base_path, v)
             for k, v in base_model_config.items()
@@ -983,7 +989,8 @@ def parse_config(config_name):
             'save_checkpoint_dir': experiment_config['checkpoint_dir'],
             'export_dir': experiment_config['model_dir'], 
             'summary_dir': experiment_config['summary_dir'], 
-            'train_files': data_config['train_csv'], 
+            'train_files': data_config['train_csv'],
+            'test_files': data_config['test_csv'],
             'dev_files': data_config['dev_csv']
         }
 

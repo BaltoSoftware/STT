@@ -696,11 +696,12 @@ def train_impl(epochs=0, reverse=False, limit=0, write=True, silent_load=False):
 
 def main():
    
-    #raw_config, run_args = parse_config(sys.argv[1])
+    raw_config, run_args = parse_config(sys.argv[1])
     #print(json.dumps(run_args, indent=2))
-    #initialize_globals_from_args(**run_args)
-    initialize_globals_from_cli()
-
+    initialize_globals_from_args(**run_args)
+    #initialize_globals_from_cli()
+    
+    print(json.dumps(dict(Config.items()), indent=2))
     def deprecated_msg(prefix):
         return (
             f"{prefix} Using the training module as a generic driver for all training "
