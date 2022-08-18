@@ -945,3 +945,52 @@ def create_progressbar(*args, **kwargs):
 def log_progress(message):
     if not Config.show_progressbar:
         log_info(message)
+
+def parse_config(config_name):
+    config = json.loads(open(config_name).read())
+
+
+    base_path = config['base_path']
+    data_config = config['data']
+    hyperparam_config = config['hyperparameters']
+
+    experiment_config = config['experiments']
+    experiment_name = experiment_config.pop('experiment_name')
+
+    base_model_config = config['coqui_base_models']
+
+    data_config = {
+            k: os.path.join(base_path, v)
+            for k, v in data_config.items()
+        }
+    base_model_config = {
+            k: os.path.join(base_path, v)
+            for k, v in base_model_config.items()
+        }
+
+    # TODO: Do we need to make the root experiment dir here?
+    experiment_dir = os.path.join(base_path, experiment_name)
+    if not os.path.exists(experiment_dir):
+            os.mkdir(experiment_dir)
+    experiment_config = {
+            k: os.path.join(experiment_dir, v)
+            for k, v in experiment_config.items()
+        }
+
+    run_args = {
+            'load_checkpoint_dir': base_model_config['checkpoint_dir'], 
+            'alphabet_config_path': base_model_config['alphabet_file'],
+            'save_checkpoint_dir': experiment_config['checkpoint_dir'],
+            'export_dir': experiment_config['model_dir'], 
+            'summary_dir': experiment_config['summary_dir'], 
+            'train_files': data_config['train_csv'], 
+            'dev_files': data_config['dev_csv']
+        }
+
+    run_args = {
+            **run_args, 
+            **hyperparam_config
+        }
+
+    return config, run_args
+
