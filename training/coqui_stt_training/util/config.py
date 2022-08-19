@@ -957,7 +957,13 @@ def parse_config(config_name):
     experiment_config = config['experiments']
     experiment_name = experiment_config.pop('experiment_name')
 
-    base_model_config = config['coqui_base_models']
+    if 'coqui_base_models' in config.keys():
+        base_model_config = config['coqui_base_models']
+
+        base_model_config = {
+            k: os.path.join(base_path, v)
+            for k, v in base_model_config.items()
+        }
 
     data_config = {
             k: os.path.join(base_path, v)
@@ -969,11 +975,6 @@ def parse_config(config_name):
             print("Parsing Key")
             data_config[key] = [data_config[key]]
 
-    base_model_config = {
-            k: os.path.join(base_path, v)
-            for k, v in base_model_config.items()
-        }
-
     # TODO: Do we need to make the root experiment dir here?
     experiment_dir = os.path.join(base_path, experiment_name)
     if not os.path.exists(experiment_dir):
@@ -984,8 +985,6 @@ def parse_config(config_name):
         }
 
     run_args = {
-            'load_checkpoint_dir': base_model_config['checkpoint_dir'], 
-            'alphabet_config_path': base_model_config['alphabet_file'],
             'save_checkpoint_dir': experiment_config['checkpoint_dir'],
             'export_dir': experiment_config['model_dir'], 
             'summary_dir': experiment_config['summary_dir'], 
@@ -993,6 +992,10 @@ def parse_config(config_name):
             'test_files': data_config['test_csv'],
             'dev_files': data_config['dev_csv']
         }
+
+    if 'coqui_base_models' in config.keys():
+            run_args['load_checkpoint_dir'] = base_model_config['checkpoint_dir']
+            run_args['alphabet_config_path'] = base_model_config['alphabet_file']
 
     run_args = {
             **run_args, 
