@@ -956,6 +956,7 @@ def parse_config(config_name):
 
     experiment_config = config['experiments']
     experiment_name = experiment_config.pop('experiment_name')
+    experiment_lang = experiment_config.pop('lang')
 
     if 'coqui_base_models' in config.keys():
         base_model_config = config['coqui_base_models']
@@ -976,7 +977,7 @@ def parse_config(config_name):
             data_config[key] = [data_config[key]]
 
     # TODO: Do we need to make the root experiment dir here?
-    experiment_dir = os.path.join(base_path, experiment_name)
+    experiment_dir = os.path.join(base_path, 'experiments', experiment_lang, experiment_name)
     if not os.path.exists(experiment_dir):
             os.mkdir(experiment_dir)
     experiment_config = {
