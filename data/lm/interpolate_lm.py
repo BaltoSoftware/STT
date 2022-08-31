@@ -8,7 +8,6 @@ from collections import Counter
 import progressbar
 from clearml import Task
 
-
 def convert_text(idx, input_txt, output_dir):
 
     data_lower = os.path.join(output_dir, "{}_lower.txt.gz".format(idx))
@@ -57,12 +56,35 @@ def build_intermediate_lm(args, idx, data_lower):
         intermediate_lm_path,
     ]
 
-    # if args.discount_fallback:
-    #     subargs += ["--discount_fallback"]
+    if args.discount_fallback:
+        subargs += ["--discount_fallback"]
 
     subprocess.check_call(subargs)
 
     return intermediate_lm_path
+
+def interpolate(args):
+
+    interpolated_lm_arpa = os.path.join(args.output_dir, "{}.arpa".format(args.name[0]))
+    intermediate_lms = []
+
+    for idx, vals in enumerate(zip(args.input_txts, args.weights)):
+        input_txt, weight = vals
+        data_lower = convert_text(idx, input_txt, args.output_dir)
+        intermediate_lm_path = build_intermediate_lm(args, idx, data_lower)
+        intermediate_lms.append(intermediate_lm_path)
+
+    interpolate_cmd = "{} -m {} -w {}".format(
+        os.path.join(args.kenlm_bins, "interpolate"),
+        " ".join(intermediate_lms),
+        " ".join(args.weights)
+        )
+
+    with open(interpolated_lm_arpa, "w") as f:
+        # could not get this to run with subargs
+        subprocess.check_call(interpolate_cmd, shell=True, stdout=f)
+
+    return interpolated_lm_arpa
 
 def binarize_lm(args, interpolated_lm_arpa):
 
@@ -154,43 +176,16 @@ def main():
         type=str,
         required=True,
     )
+    parser.add_argument(
+        "--discount_fallback",
+        help="To try when such message is returned by kenlm: 'Could not calculate Kneser-Ney discounts [...] rerun with --discount_fallback'",
+        action="store_true",
+    )
 
     args = parser.parse_args()
-    assert len(args.input_txts) == len(args.weights)
+    assert len(args.input_txts) == len(args.weights), "Number of input files and number of weights must be the same"
 
-    intermediate_lms = []
-
-    for idx, vals in enumerate(zip(args.input_txts, args.weights)):
-        input_txt, weight = vals
-        data_lower = convert_text(idx, input_txt, args.output_dir)
-        intermediate_lm_path = build_intermediate_lm(args, idx, data_lower)
-        intermediate_lms.append(intermediate_lm_path)
-
-    interpolated_lm_arpa = os.path.join(args.output_dir, "{}.arpa".format(args.name[0]))
-
-    subargs = [
-        os.path.join(args.kenlm_bins, "interpolate"),
-        "-m",
-        " ".join(intermediate_lms),
-        "-w",
-        " ".join(args.weights),
-    ]
- 
-    interpolate_cmd = "{} -m {} -w {}".format(
-        os.path.join(args.kenlm_bins, "interpolate"),
-        " ".join(intermediate_lms),
-        " ".join(args.weights)
-        )
-
-    print(interpolate_cmd)
-    with open(interpolated_lm_arpa, "w") as f:
-        #subprocess.check_call(subargs, shell=True,  stdout=f)
-        subprocess.check_call(interpolate_cmd, shell=True, stdout=f)
-
-    # will skip arpa file filtering for now
-    # need some logic to include all ngrams from customer data
-    # and filter out ngrams past some threshold for other data
-
+    interpolated_lm_arpa = interpolate(args)
     binarize_lm(args, interpolated_lm_arpa)
 
 if __name__ == "__main__":
