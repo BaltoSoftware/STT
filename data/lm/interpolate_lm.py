@@ -3,10 +3,8 @@ import gzip
 import io
 import os
 import subprocess
-from collections import Counter
 
 import progressbar
-from clearml import Task
 
 def convert_text(idx, input_txt, output_dir):
 
@@ -90,7 +88,7 @@ def binarize_lm(args, interpolated_lm_arpa):
 
     # Quantize and produce trie binary.
     print("\nBuilding interpolated_lm.binary ...")
-    binary_path = os.path.join(args.output_dir, "interpolated_lm.binary")
+    binary_path = os.path.join(args.output_dir, "{}_interpolated_lm.binary".format(args.name[0]))
     subprocess.check_call(
         [
             os.path.join(args.kenlm_bins, "build_binary"),
