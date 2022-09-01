@@ -84,6 +84,21 @@ def interpolate(args):
 
     return interpolated_lm_arpa
 
+def create_combined_vocabulary(args):
+
+    combined_vocab = set()
+    combined_vocab_path = os.path.join(args.output_dir, "{}_vocab.txt".format(args.name[0]))
+
+    for idx in range(len(args.input_txts)):
+        vocab_path = os.path.join(args.output_dir, "{}_lm.vocab".format(idx))
+        with open(vocab_path) as f:
+            vocab = f.read()
+        vocab = vocab.split("\x00")
+        combined_vocab |= set(vocab)
+
+    with open(combined_vocab_path, "w") as f:
+        f.write(" ".join(combined_vocab))
+
 def binarize_lm(args, interpolated_lm_arpa):
 
     # Quantize and produce trie binary.
@@ -185,6 +200,7 @@ def main():
 
     interpolated_lm_arpa = interpolate(args)
     binarize_lm(args, interpolated_lm_arpa)
+    create_combined_vocabulary(args)
 
 if __name__ == "__main__":
     main()
