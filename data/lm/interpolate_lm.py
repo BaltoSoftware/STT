@@ -86,6 +86,8 @@ def interpolate(args):
 
 def create_combined_vocabulary(args):
 
+    print("\nCreating combined vocabulary file from constituent LMs...")
+
     combined_vocab = set()
     combined_vocab_path = os.path.join(args.output_dir, "{}_vocab.txt".format(args.name[0]))
 
@@ -98,6 +100,8 @@ def create_combined_vocabulary(args):
 
     with open(combined_vocab_path, "w") as f:
         f.write(" ".join(combined_vocab))
+
+    print("\nWrote combined vocabulary file to {}".format(combined_vocab_path))
 
 def binarize_lm(args, interpolated_lm_arpa):
 
