@@ -14,6 +14,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = DESIRED_LOG_LEVEL
 import time
 from datetime import datetime
 from pathlib import Path
+import json
 
 import numpy as np
 import progressbar
@@ -48,8 +49,10 @@ from .util.checkpoints import (
 )
 from .util.config import (
     Config,
+    parse_config,
     create_progressbar,
     initialize_globals_from_cli,
+    initialize_globals_from_args,
     log_debug,
     log_error,
     log_info,
@@ -88,12 +91,19 @@ def calculate_mean_edit_distance_and_loss(iterator, dropout, reuse):
 
     # Calculate the logits of the batch
     logits, _ = create_model(
-        batch_x, batch_seq_len, dropout, reuse=reuse, rnn_impl=rnn_impl
+        batch_x,
+        batch_seq_len,
+        dropout,
+        reuse=reuse,
+        rnn_impl=rnn_impl,
+        freeze_layer_1=Config.freeze_layer_1,
+        freeze_layer_2=Config.freeze_layer_2,
+        freeze_layer_3=Config.freeze_layer_3
     )
 
     # Compute the CTC loss using TensorFlow's `ctc_loss`
     total_loss = tfv1.nn.ctc_loss(
-        labels=batch_y, inputs=logits, sequence_length=batch_seq_len
+        labels=batch_y, inputs=logits, sequence_length=batch_seq_len, ignore_longer_outputs_than_inputs=True
     )
 
     # Check if any files lead to non finite loss
@@ -330,6 +340,7 @@ def train():
             "If the following process crashes, you likely have batch sizes "
             "that are too big for your available system memory (or GPU memory)."
         )
+        
         train_impl(
             epochs=1, reverse=True, limit=Config.train_batch_size * 3, write=False
         )
@@ -684,6 +695,10 @@ def train_impl(epochs=0, reverse=False, limit=0, write=True, silent_load=False):
 
 
 def main():
+   
+    #raw_config, run_args = parse_config(sys.argv[1])
+    #print(json.dumps(run_args, indent=2))
+    #initialize_globals_from_args(**run_args)
     initialize_globals_from_cli()
 
     def deprecated_msg(prefix):
