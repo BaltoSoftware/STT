@@ -8,8 +8,6 @@ DESIRED_LOG_LEVEL = (
     sys.argv[LOG_LEVEL_INDEX] if 0 < LOG_LEVEL_INDEX < len(sys.argv) else "3"
 )
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = DESIRED_LOG_LEVEL
-
-import numpy as np
 import tensorflow as tf
 import tensorflow.compat.v1 as tfv1
 import shutil
@@ -26,6 +24,7 @@ from .util.io import (
     isdir_remote,
 )
 
+tf.compat.v1.disable_eager_execution()
 
 def file_relative_read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
