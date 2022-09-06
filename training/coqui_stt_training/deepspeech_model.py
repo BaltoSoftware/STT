@@ -22,7 +22,7 @@ tfv1.logging.set_verbosity(
     }.get(DESIRED_LOG_LEVEL)
 )
 
-from .util.config import Config
+from .util.config import Config, log_info
 from .util.feeding import audio_to_features
 
 
@@ -266,6 +266,10 @@ def create_model(
         layer_6, [-1, batch_size, Config.n_hidden_6], name="raw_logits"
     )
     layers["raw_logits"] = layer_6
+
+    log_info("----NUMBER OF TRAINABLE VARIABLES---")
+    for l in tfv1.trainable_variables():
+        print(l)
 
     # Output shape: [n_steps, batch_size, n_hidden_6]
     return layer_6, layers
